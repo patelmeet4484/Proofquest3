@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ProofQuest V3</title>
+<meta name="description" content="Daily real-world challenges with proof, XP, voting and leaderboards.">
+<style>
+:root{--bg:#0a0b0f;--panel:#14171e;--line:#2b303b;--text:#f8f9f4;--muted:#9ba4b3;--lime:#d8ff45;--purple:#9b7cff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0,rgba(155,124,255,.20),transparent 30%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif}
+.wrap{max-width:1120px;margin:auto;padding:0 20px}nav{position:sticky;top:0;background:rgba(10,11,15,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);z-index:10}.navin{height:72px;display:flex;align-items:center;justify-content:space-between}.logo{font-size:23px;font-weight:1000}.logo i{font-style:normal;color:var(--lime)}
+button,input,textarea,select{font:inherit}.btn{border:0;border-radius:13px;padding:13px 15px;font-weight:950;cursor:pointer;background:var(--lime);color:#111}.btn.alt{background:#222631;color:white;border:1px solid #333947}
+.hero{text-align:center;padding:60px 0 34px}.eyebrow{font-size:12px;letter-spacing:.18em;font-weight:900;color:var(--lime)}h1{font-size:clamp(50px,9vw,95px);line-height:.92;letter-spacing:-5px;margin:12px auto 18px}.hero p{max-width:700px;margin:auto;color:var(--muted);font-size:19px;line-height:1.55}
+.banner{max-width:780px;margin:22px auto 0;padding:11px 14px;border:1px solid var(--line);border-radius:999px;background:#12151a;font-size:12px}.banner b{color:var(--lime)}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.panel{background:linear-gradient(145deg,#171a22,#101218);border:1px solid var(--line);border-radius:24px;padding:22px}.panel h2,.panel h3{margin-top:0}
+.meta{display:flex;gap:8px;flex-wrap:wrap}.tag{font-size:10px;font-weight:950;padding:7px 9px;border-radius:999px;background:#20242d;border:1px solid #323846}.tag.hot{background:var(--lime);color:#111;border-color:var(--lime)}
+.quest h2{font-size:clamp(31px,5vw,50px);line-height:1.02;letter-spacing:-2px;margin:16px 0 10px}.quest p{color:var(--muted);line-height:1.55}.rewardbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.reward{background:#0d0f14;border:1px solid var(--line);border-radius:14px;padding:13px}.reward span{display:block;font-size:10px;color:#7f8798}.reward b{font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#0d0f14;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}.stat strong{display:block;font-size:24px}.stat span{font-size:10px;color:var(--muted)}
+.section{padding:55px 0 10px}.section h3{font-size:32px;letter-spacing:-1.2px;margin:0 0 18px}.feed{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.post{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden}.media{aspect-ratio:4/3;background:#0d0f14;display:grid;place-items:center;color:#aab3c0;font-weight:800;text-align:center;padding:18px}.postbody{padding:15px}.postbody p{font-size:13px;color:#c7cdd7;line-height:1.45}.vote{display:flex;gap:8px}.vote button{flex:1;border:1px solid var(--line);background:#1c2029;color:white;padding:10px;border-radius:11px;font-size:12px;font-weight:900;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form{display:grid;gap:10px}input,textarea,select{width:100%;background:#0c0e13;border:1px solid var(--line);border-radius:12px;color:white;padding:13px;outline:none}textarea{min-height:92px}
+.rank{display:grid;grid-template-columns:45px 1fr auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:13px;margin-bottom:8px}.xp{font-weight:950;color:var(--lime)}.muted{color:var(--muted);font-size:13px;line-height:1.5}.notice{display:none;margin-top:10px;padding:12px;border-radius:12px;background:#172017;border:1px solid #334833;color:#dbffd4;font-size:13px}.notice.show{display:block}
+footer{border-top:1px solid var(--line);margin-top:70px;padding:30px 0 50px;text-align:center;color:#6f7787;font-size:12px}
+@media(max-width:850px){.grid,.two{grid-template-columns:1fr}.feed{grid-template-columns:1fr 1fr}}@media(max-width:620px){h1{letter-spacing:-3px}.feed{grid-template-columns:1fr}.rewardbar,.stats{grid-template-columns:1fr 1fr 1fr}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+</head>
+<body>
+<nav><div class="wrap navin"><div class="logo">PROOF<i>QUEST</i></div><button class="btn alt" onclick="document.querySelector('#account').scrollIntoView({behavior:'smooth'})">Account</button></div></nav>
+<main class="wrap">
+<section class="hero"><div class="eyebrow">REAL PEOPLE · REAL PROOF</div><h1>Complete it. Prove it. Climb.</h1><p>Daily challenges with accounts, community submissions, XP, voting, and leaderboards.</p><div class="banner" id="modeBanner">Checking backend…</div></section>
+
+<section class="grid">
+<div class="panel quest">
+<div class="meta"><span class="tag hot">TODAY'S QUEST</span><span class="tag" id="qcat">CREATIVE</span><span class="tag" id="qdiff">MEDIUM</span></div>
+<h2 id="qtitle">Loading…</h2><p id="qdesc"></p>
+<div class="rewardbar"><div class="reward"><span>REWARD</span><b id="qxp">+100 XP</b></div><div class="reward"><span>PROOF</span><b id="qproof">PHOTO / VIDEO</b></div><div class="reward"><span>RESET</span><b id="countdown">—</b></div></div>
+<button class="btn" id="claimQuest">CLAIM DAILY QUEST</button><div class="notice" id="claimNotice"></div>
+</div>
+<div class="panel"><h3>Your profile</h3><div class="stats"><div class="stat"><strong id="myXP">0</strong><span>XP</span></div><div class="stat"><strong id="myStreak">0</strong><span>STREAK</span></div><div class="stat"><strong id="myProofs">0</strong><span>PROOFS</span></div></div><p class="muted" id="profileStatus">Sign in to sync across devices.</p></div>
+</section>
+
+<section class="section"><h3>Community feed</h3><div class="feed" id="feedGrid"></div></section>
+
+<section class="section two">
+<div><h3>Leaderboard</h3><div id="leaderboard"></div></div>
+<div><h3>Post your proof</h3><div class="panel"><div class="form"><select id="questSelect"></select><textarea id="proofText" placeholder="What happened?"></textarea><input id="proofUrl" placeholder="Optional image/video URL"><button class="btn" id="submitProof">POST PROOF</button></div><div class="notice" id="proofNotice"></div></div></div>
+</section>
+
+<section class="section two" id="account">
+<div class="panel"><h3>Account</h3><p class="muted">Connected mode uses Supabase email/password authentication.</p><div class="form"><input id="email" type="email" placeholder="you@example.com"><input id="password" type="password" placeholder="Password"><button class="btn" id="signUp">Create account</button><button class="btn alt" id="signIn">Sign in</button><button class="btn alt" id="signOut">Sign out</button></div><div class="notice" id="authNotice"></div></div>
+<div class="panel"><h3>Connected mode</h3><p class="muted">Once your Supabase project credentials are added, users, submissions, votes, and leaderboard data are shared between visitors instead of living only in one browser.</p><div class="meta"><span class="tag">AUTH</span><span class="tag">DATABASE</span><span class="tag">SHARED FEED</span><span class="tag">VOTES</span><span class="tag">LEADERBOARD</span></div></div>
+</section>
+</main>
+<footer>PROOFQUEST V3 · Backend-ready MVP</footer>
+
+<script>
+const QUESTS=[
+{id:1,t:"Recreate a famous movie scene using only things in your house.",d:"No buying props. No professional equipment.",c:"CREATIVE",x:100,l:"MEDIUM",p:"PHOTO / VIDEO"},
+{id:2,t:"Find three things in public that accidentally look like faces.",d:"No staging. Buildings, cars, food and signs count.",c:"OUTSIDE",x:75,l:"EASY",p:"3 PHOTOS"},
+{id:3,t:"Learn one harmless party trick in under 60 minutes.",d:"Pick something you cannot already do.",c:"SKILL",x:150,l:"HARD",p:"VIDEO"},
+{id:4,t:"Take a photo that looks impossible without using AI.",d:"Forced perspective, reflections, timing and practical tricks are allowed.",c:"CREATIVE",x:150,l:"HARD",p:"PHOTO"},
+{id:5,t:"Build the tallest tower you can from exactly 20 sheets of paper.",d:"Paper only. No tape, glue or staples.",c:"SKILL",x:125,l:"MEDIUM",p:"PHOTO / VIDEO"}
+];
+const $=id=>document.getElementById(id);
+const CFG=window.PROOFQUEST_CONFIG||{};
+const backendReady=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey&&!CFG.supabaseUrl.includes("YOUR_"));
+const sb=backendReady?supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
+const today=()=>new Date().toISOString().slice(0,10);
+const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return Math.abs(h>>>0)};
+const daily=()=>QUESTS[hash(today())%QUESTS.length];
+function notice(id,msg){$(id).textContent=msg;$(id).classList.add("show")}
+function loadQuest(){const q=daily();$("qtitle").textContent=q.t;$("qdesc").textContent=q.d;$("qcat").textContent=q.c;$("qdiff").textContent=q.l;$("qxp").textContent="+"+q.x+" XP";$("qproof").textContent=q.p;$("questSelect").innerHTML=QUESTS.map(q=>`<option value="${q.id}">${q.t}</option>`).join("")}
+function countdown(){const n=new Date(),x=new Date(n);x.setHours(24,0,0,0);const ms=x-n;$("countdown").textContent=Math.floor(ms/3600000)+"h "+Math.floor(ms%3600000/60000)+"m"}
+function ds(){return {xp:+localStorage.getItem("pq3_xp")||0,streak:+localStorage.getItem("pq3_streak")||0,proofs:+localStorage.getItem("pq3_proofs")||0,last:localStorage.getItem("pq3_last")||""}}
+function renderDemo(){const s=ds();$("myXP").textContent=s.xp;$("myStreak").textContent=s.streak;$("myProofs").textContent=s.proofs;
+let posts=[];try{posts=JSON.parse(localStorage.getItem("pq3_posts")||"[]")}catch(e){}
+posts=[...posts,{name:"Maya",text:"Used a spoon reflection for the impossible-photo quest.",votes:42},{name:"Jordan",text:"My 20-sheet tower reached 91 cm.",votes:31}];
+$("feedGrid").innerHTML=posts.map(p=>`<article class="post"><div class="media">✅ PROOF</div><div class="postbody"><b>${p.name}</b><p>${p.text}</p><div class="vote"><button onclick="this.textContent='Voted ✓';this.disabled=true">🔥 ${p.votes||0} votes</button></div></div></article>`).join("");
+const rows=[["Maya",520],["Jordan",445],["Leo",390],["You",s.xp]].sort((a,b)=>b[1]-a[1]);
+$("leaderboard").innerHTML=rows.map((r,i)=>`<div class="rank"><div>#${i+1}</div><div><b>${r[0]}</b></div><div class="xp">${r[1]} XP</div></div>`).join("")}
+async function getSession(){if(!backendReady)return null;const {data}=await sb.auth.getSession();return data.session}
+async function ensureProfile(user){let {data}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();if(!data){const ins=await sb.from("profiles").insert({id:user.id,display_name:user.email.split("@")[0]}).select().single();data=ins.data}return data}
+async function renderConnected(){const session=await getSession();$("profileStatus").textContent=session?`Signed in as ${session.user.email}`:"Not signed in.";
+if(session){const p=await ensureProfile(session.user);$("myXP").textContent=p?.xp||0;$("myStreak").textContent=p?.streak||0;const {count}=await sb.from("submissions").select("*",{count:"exact",head:true}).eq("user_id",session.user.id);$("myProofs").textContent=count||0}
+const {data:posts}=await sb.from("submissions").select("id,proof_text,proof_url,profiles(display_name),votes(count)").order("created_at",{ascending:false}).limit(20);
+$("feedGrid").innerHTML=(posts||[]).map(p=>`<article class="post"><div class="media">${p.proof_url?`<a href="${p.proof_url}" target="_blank" style="color:white">Open proof ↗</a>`:"✅ PROOF"}</div><div class="postbody"><b>${p.profiles?.display_name||"Quester"}</b><p>${p.proof_text}</p><div class="vote"><button onclick="voteConnected('${p.id}')">🔥 ${p.votes?.[0]?.count||0} votes</button></div></div></article>`).join("")||"<p class='muted'>No submissions yet.</p>";
+const {data:leaders}=await sb.from("profiles").select("display_name,xp").order("xp",{ascending:false}).limit(10);
+$("leaderboard").innerHTML=(leaders||[]).map((r,i)=>`<div class="rank"><div>#${i+1}</div><div><b>${r.display_name||"Quester"}</b></div><div class="xp">${r.xp||0} XP</div></div>`).join("")}
+async function voteConnected(id){const s=await getSession();if(!s)return notice("authNotice","Sign in before voting.");const {error}=await sb.from("votes").insert({submission_id:id,user_id:s.user.id});if(error)alert(error.message);else renderConnected()}
+$("claimQuest").onclick=async()=>{const q=daily();if(!backendReady){const s=ds();if(s.last===today())return notice("claimNotice","Already claimed today.");localStorage.setItem("pq3_xp",s.xp+q.x);localStorage.setItem("pq3_streak",s.streak+1);localStorage.setItem("pq3_last",today());renderDemo();return notice("claimNotice","Quest claimed in demo mode.");}
+const sess=await getSession();if(!sess)return notice("authNotice","Sign in first.");const p=await ensureProfile(sess.user);const {error}=await sb.from("profiles").update({xp:(p.xp||0)+q.x,streak:(p.streak||0)+1}).eq("id",sess.user.id);if(error)notice("claimNotice",error.message);else{notice("claimNotice","Quest claimed.");renderConnected()}}
+$("submitProof").onclick=async()=>{const text=$("proofText").value.trim(),url=$("proofUrl").value.trim(),qid=+$("questSelect").value;if(!text)return notice("proofNotice","Add a short description first.");
+if(!backendReady){let arr=[];try{arr=JSON.parse(localStorage.getItem("pq3_posts")||"[]")}catch(e){}arr.unshift({name:"You",text,votes:0});localStorage.setItem("pq3_posts",JSON.stringify(arr.slice(0,20)));const s=ds();localStorage.setItem("pq3_proofs",s.proofs+1);renderDemo();return notice("proofNotice","Saved locally in demo mode.");}
+const sess=await getSession();if(!sess)return notice("proofNotice","Sign in first.");const {error}=await sb.from("submissions").insert({user_id:sess.user.id,quest_id:qid,proof_text:text,proof_url:url||null});if(error)notice("proofNotice",error.message);else{notice("proofNotice","Proof posted.");$("proofText").value="";renderConnected()}}
+$("signUp").onclick=async()=>{if(!backendReady)return notice("authNotice","Backend not connected yet.");const {error}=await sb.auth.signUp({email:$("email").value,password:$("password").value});notice("authNotice",error?error.message:"Account created. Check your email if confirmation is enabled.")}
+$("signIn").onclick=async()=>{if(!backendReady)return notice("authNotice","Backend not connected yet.");const {error}=await sb.auth.signInWithPassword({email:$("email").value,password:$("password").value});notice("authNotice",error?error.message:"Signed in.");if(!error)renderConnected()}
+$("signOut").onclick=async()=>{if(backendReady){await sb.auth.signOut();renderConnected();notice("authNotice","Signed out.")}}
+loadQuest();countdown();setInterval(countdown,60000);
+if(backendReady){$("modeBanner").innerHTML="<b>CONNECTED MODE</b> · Supabase backend detected.";renderConnected();sb.auth.onAuthStateChange(()=>setTimeout(renderConnected,0))}
+else{$("modeBanner").innerHTML="<b>DEMO MODE</b> · Add Supabase URL and anon key to config.js to enable real shared users.";renderDemo()}
+</script>
+</body>
+</html>
